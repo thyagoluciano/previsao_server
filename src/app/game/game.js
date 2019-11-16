@@ -1,4 +1,5 @@
 const Deck = require('./deck');
+const { gameLogger } = require('../../../logger');
 
 class CardGameTable {
   constructor(
@@ -18,6 +19,26 @@ class CardGameTable {
     this.roundInProgress = false;
     this.currentRound = null;
     this.deck = new Deck();
+    this.currentPlayerTurn = 0;
+    this.rounds = {};
+  }
+
+  setCardInRound(data) {
+    if (this.rounds[this.currentRound] === undefined) {
+      this.rounds[this.currentRound] = [];
+    }
+
+    this.rounds[this.currentRound][data.playerId] = data.card;
+
+    if (this.currentPlayerTurn === this.players.length - 1) {
+      // TODO: ADICIONAR QUEM GANHOU A RODADA;
+      gameLogger.info(`RODADA FINALIZADA ${this.currentRound}`);
+      this.startRound();
+    }
+  }
+
+  changeCurrentPlayerTurn() {
+    this.currentPlayerTurn += 1;
   }
 
   distributeGameCards(copyCards, joker) {
@@ -43,6 +64,7 @@ class CardGameTable {
     if (this.currentRound < this.quantityRounds) {
       this.roundInProgress = true;
       this.currentRound += 1;
+      this.currentPlayerTurn = 0;
       const copyCards = Array.from(this.deck.cards);
       this.deck.shuffle(copyCards);
       const joker = this.deck.getCards(copyCards.shift());
@@ -69,7 +91,7 @@ class CardGameTable {
       (this.playerIndex(playerId) === this.players.length - 1 &&
         !this.isValidBet())
     ) {
-      console.log('Aposta inválida');
+      gameLogger.info(`Aposta inválida user: ${playerId}, bet: ${bet}`);
       return;
     }
 
@@ -85,7 +107,7 @@ class CardGameTable {
     this.players.forEach(player => {
       total += player.bet;
     });
-    return total !== this.currentRound;
+    return total === this.currentRound;
   }
 
   getBets() {

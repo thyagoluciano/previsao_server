@@ -83,11 +83,40 @@ const bettingRound = (roomId, index) => {
   );
 };
 
-const playCard = (roomId, index) => {
-  io.to(games[roomId].players[index].id).emit(
-    'playCard',
-    games[roomId].players[index]
-  );
+const playCard = roomId => {
+  const room = games[roomId];
+  io.sockets.in(roomId).emit('playCard', {
+    cards: room.rounds[room.currentRound],
+    nextPlayer: room.players[room.currentPlayerTurn].id,
+  });
+};
+
+const playerPlayCard = (playData, socket) => {
+  const { roomId, card } = playData;
+  const room = games[roomId];
+  const playerIndex = room.playerIndex(socket.id);
+
+  if (playerIndex === room.currentPlayerTurn) {
+    if (room.players[playerIndex].hasCard(card)) {
+      room.setCardInRound({
+        playerId: socket.id,
+        card,
+      });
+
+      room.changeCurrentPlayerTurn();
+      playCard(roomId);
+      return;
+    }
+    io.to(games[roomId].players[playerIndex].id).emit(
+      'playCardError',
+      `Carta inválida: ${card}`
+    );
+  } else {
+    io.to(games[roomId].players[playerIndex].id).emit(
+      'playCardError',
+      `Aguarde sua vez`
+    );
+  }
 };
 
 const playerBet = (betData, socket) => {
@@ -102,7 +131,7 @@ const playerBet = (betData, socket) => {
     room.playerBet(socket.id, bet);
     if (playerIndex === room.players.length - 1) {
       io.sockets.in(roomId).emit('finishedBets', room.getBets());
-      playCard(roomId, 0);
+      playCard(roomId);
       return;
     }
     bettingRound(roomId, playerIndex + 1);
@@ -134,5 +163,6 @@ io.sockets.on('connect', socket => {
   socket.on('joinGame', roomData => joinGame(roomData, socket));
   socket.on('startGame', roomData => startGame(roomData, socket));
   socket.on('playerBet', betData => playerBet(betData, socket));
+  socket.on('playerPlayCard', playData => playerPlayCard(playData, socket));
   socket.on('disconnect', () => disconnect(socket));
 });

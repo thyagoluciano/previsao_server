@@ -14,6 +14,17 @@ class Player {
     this.deck = cards;
   }
 
+  hasCard(playCard) {
+    let cardIsValid = false;
+    this.deck.forEach((card, index) => {
+      if (JSON.stringify(playCard) === JSON.stringify(card)) {
+        cardIsValid = true;
+        delete this.deck[index];
+      }
+    });
+    return cardIsValid;
+  }
+
   playCard() {
     /* TODO: 
       verificar se é a vez do jogador

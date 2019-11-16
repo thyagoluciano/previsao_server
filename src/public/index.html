@@ -23,6 +23,8 @@
     socket.on('deck', (data) => console.log(data));
     socket.on('finishedBets', (data) => console.log('finishedBets', data));
     socket.on('playCard', (data) => console.log('playCard', data));
+    socket.on('playCardError', (data) => console.log('playCardError', data));
+    
 
     socket.on('disconnect', (data) => console.log(data));
 
@@ -39,7 +41,7 @@
     const joinGame = () => socket.emit('joinGame', {roomId: 'ZUP', password: '123'});
     const startGame = () => socket.emit('startGame', {roomId: 'ZUP'});
     const playerBet = () => socket.emit('playerBet', {roomId: 'ZUP', bet: 1});
-
+    const playerPlayCard = (card) => socket.emit('playerPlayCard', {roomId: 'ZUP', card: card});
   </script>
 </body>
 </html>
