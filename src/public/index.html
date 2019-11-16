@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
+</head>
+<body>
+  <h1>Game</h1>
+
+  <script type="text/javascript">
+    const socket = io('http://localhost:3000');
+
+    socket.on('tock', () => {});
+    socket.on('newPlayer', (data) => console.log('newPlayer', data));
+    socket.on('createGame', (data) => console.log(data));
+    socket.on('newGamePlayer', (data) => console.log(data));
+    socket.on('bettingRound', (data) => console.log('bettingRound', data));
+    socket.on('deck', (data) => console.log(data));
+    socket.on('finishedBets', (data) => console.log('finishedBets', data));
+    socket.on('playCard', (data) => console.log('playCard', data));
+
+    socket.on('disconnect', (data) => console.log(data));
+
+    const login = (username) => socket.emit('login', { username: username });
+    const createGame = () => {
+      socket.emit('createGame', {
+        name: 'ZUP',
+        quantityRounds: 10,
+        maxPlayers: 10,
+        isProtected: true,
+        password: '123'
+      });
+    }
+    const joinGame = () => socket.emit('joinGame', {roomId: 'ZUP', password: '123'});
+    const startGame = () => socket.emit('startGame', {roomId: 'ZUP'});
+    const playerBet = () => socket.emit('playerBet', {roomId: 'ZUP', bet: 1});
+
+  </script>
+</body>
+</html>
